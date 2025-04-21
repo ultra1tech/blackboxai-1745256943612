@@ -1,0 +1,6 @@
+{
+  "backend/tests/test_auth.py": true,
+  "backend/tests/test_products.py": true,
+  "tests/test_auth.py": true,
+  "tests/test_products.py": true
+}
