@@ -1,77 +1,603 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Buyer Dashboard - Marketplace</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-  <!-- Header -->
-  <header class="bg-white shadow">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-indigo-600">Buyer Dashboard</h1>
-      <nav class="space-x-4">
-        <a href="index.html" class="text-gray-700 hover:text-indigo-600">Home</a>
-        <a href="shop.html" class="text-gray-700 hover:text-indigo-600">Shop</a>
-        <a href="buyer-dashboard.html" class="text-indigo-600 font-semibold">Dashboard</a>
-        <a href="login.html" class="text-gray-700 hover:text-indigo-600">Logout</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Dashboard Content -->
-  <section class="container mx-auto px-4 py-12">
-    <h2 class="text-2xl font-bold mb-6">Order History</h2>
-    <div id="orders-container" class="space-y-4">
-      <!-- Orders will be loaded here -->
-    </div>
-  </section>
-
-  <script>
-    const token = localStorage.getItem('access_token');
-    const ordersContainer = document.getElementById('orders-container');
-
-    if (!token) {
-      ordersContainer.innerHTML = '<p class="text-red-500">Please login to view your orders.</p>';
-    } else {
-      fetch('http://localhost:8000/orders/', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch orders');
-        return response.json();
-      })
-      .then(orders => {
-        if (orders.length === 0) {
-          ordersContainer.innerHTML = '<p>No orders found.</p>';
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard - GlobalMarket</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        ordersContainer.innerHTML = '';
-        orders.forEach(order => {
-          const div = document.createElement('div');
-          div.className = 'bg-white p-4 rounded-lg shadow';
-          div.innerHTML = `
-            <h3 class="font-semibold mb-2">Order #${order.id} - Status: ${order.status}</h3>
-            <p>Total: $${order.total_amount.toFixed(2)} ${order.currency}</p>
-            <ul class="list-disc list-inside mt-2">
-              ${order.items.map(item => `<li>Product ID: ${item.product_id}, Quantity: ${item.quantity}, Price: $${item.price.toFixed(2)}</li>`).join('')}
-            </ul>
-          `;
-          ordersContainer.appendChild(div);
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-2xl font-bold text-indigo-600">GlobalMarket</a>
+                    </div>
+                </div>
+                
+                <!-- Right Side Navigation -->
+                <div class="flex items-center space-x-4">
+                    <a href="/shop.html" class="text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-store"></i>
+                        <span class="ml-1">Shop</span>
+                    </a>
+                    <button class="relative text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                    </button>
+                    <button id="userMenuBtn" class="flex items-center text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-user-circle text-2xl"></i>
+                        <span class="ml-1" id="userName">Loading...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Sidebar -->
+            <div class="w-full md:w-64 flex-shrink-0">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-8">
+                    <div class="space-y-4">
+                        <button class="tab-btn w-full text-left px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600 active" data-tab="overview">
+                            <i class="fas fa-home mr-2"></i>Overview
+                        </button>
+                        <button class="tab-btn w-full text-left px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600" data-tab="orders">
+                            <i class="fas fa-shopping-bag mr-2"></i>Orders
+                        </button>
+                        <button class="tab-btn w-full text-left px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600" data-tab="wishlist">
+                            <i class="fas fa-heart mr-2"></i>Wishlist
+                        </button>
+                        <button class="tab-btn w-full text-left px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600" data-tab="reviews">
+                            <i class="fas fa-star mr-2"></i>Reviews
+                        </button>
+                        <button class="tab-btn w-full text-left px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600" data-tab="settings">
+                            <i class="fas fa-cog mr-2"></i>Settings
+                        </button>
+                        <button onclick="logout()" class="w-full text-left px-4 py-2 rounded-md hover:bg-red-50 hover:text-red-600">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Welcome Back, <span id="welcomeName">User</span>!</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <div class="text-indigo-600 text-lg font-semibold mb-2">Total Orders</div>
+                                <div class="text-3xl font-bold" id="totalOrders">0</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <div class="text-green-600 text-lg font-semibold mb-2">Total Spent</div>
+                                <div class="text-3xl font-bold" id="totalSpent">$0</div>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <div class="text-purple-600 text-lg font-semibold mb-2">Wishlist Items</div>
+                                <div class="text-3xl font-bold" id="wishlistCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Recent Orders</h3>
+                        <div id="recentOrders" class="space-y-4">
+                            <!-- Populated via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="orders" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Orders</h2>
+                            <div class="flex items-center space-x-4 mb-6">
+                                <select id="orderStatus" class="border border-gray-300 rounded-md px-3 py-1.5">
+                                    <option value="">All Orders</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                <input type="text" id="orderSearch" placeholder="Search orders..." 
+                                    class="border border-gray-300 rounded-md px-3 py-1.5 flex-1">
+                            </div>
+                            <div id="ordersList" class="space-y-4">
+                                <!-- Populated via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wishlist Tab -->
+                <div id="wishlist" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Wishlist</h2>
+                        <div id="wishlistGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Populated via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab -->
+                <div id="reviews" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Reviews</h2>
+                        <div id="reviewsList" class="space-y-6">
+                            <!-- Populated via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-6">Account Settings</h2>
+                        <form id="settingsForm" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Image</label>
+                                <div class="flex items-center space-x-4">
+                                    <img id="profileImage" src="https://via.placeholder.com/100" alt="Profile" 
+                                        class="h-20 w-20 rounded-full object-cover">
+                                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                                    <button type="button" onclick="document.getElementById('imageUpload').click()"
+                                        class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200">
+                                        Change Image
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                    <input type="text" id="fullName" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input type="email" id="email" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                                    <input type="tel" id="phone" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                                    <select id="country" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                        <!-- Populated via JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                        <input type="password" id="currentPassword" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                        <input type="password" id="newPassword" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" 
+                                    class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Component -->
+    <div id="alert" class="fixed bottom-4 right-4 hidden">
+        <div class="rounded-md p-4"></div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            setupEventListeners();
+            loadUserData();
+            loadCountries();
         });
-      })
-      .catch(error => {
-        ordersContainer.innerHTML = '<p class="text-red-500">Failed to load orders.</p>';
-      });
-    }
-  </script>
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            currentUser = JSON.parse(localStorage.getItem('user'));
+            document.getElementById('userName').textContent = currentUser.full_name;
+            document.getElementById('welcomeName').textContent = currentUser.full_name.split(' ')[0];
+        }
+
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+
+            // Settings form
+            document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await updateProfile();
+            });
+
+            // Image upload
+            document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+
+            // Order status filter
+            document.getElementById('orderStatus').addEventListener('change', () => loadOrders());
+
+            // Order search
+            let searchTimeout;
+            document.getElementById('orderSearch').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => loadOrders(), 500);
+            });
+        }
+
+        async function loadUserData() {
+            try {
+                const response = await fetch('http://localhost:8000/api/users/dashboard/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const stats = await response.json();
+                
+                document.getElementById('totalOrders').textContent = stats.total_orders;
+                document.getElementById('totalSpent').textContent = `$${stats.total_spent.toFixed(2)}`;
+                document.getElementById('wishlistCount').textContent = stats.total_reviews;
+                
+                loadOrders();
+                loadWishlist();
+                loadReviews();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showAlert('error', 'Failed to load user data');
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const status = document.getElementById('orderStatus').value;
+                const search = document.getElementById('orderSearch').value;
+                
+                const response = await fetch(`http://localhost:8000/api/orders?status=${status}&search=${search}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const orders = await response.json();
+                
+                const ordersList = document.getElementById('ordersList');
+                ordersList.innerHTML = '';
+                
+                orders.forEach(order => {
+                    const orderElement = document.createElement('div');
+                    orderElement.className = 'border rounded-lg p-4';
+                    orderElement.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-lg font-semibold">Order #${order.id}</div>
+                                <div class="text-sm text-gray-500">${new Date(order.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold">$${order.total_amount}</div>
+                                <div class="text-sm ${getStatusColor(order.status)}">${order.status}</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            ${order.items.map(item => `
+                                <div class="flex items-center space-x-4">
+                                    <img src="${JSON.parse(item.product.image_urls)[0]}" alt="${item.product.title}" 
+                                        class="h-16 w-16 object-cover rounded">
+                                    <div>
+                                        <div class="font-medium">${item.product.title}</div>
+                                        <div class="text-sm text-gray-500">Quantity: ${item.quantity}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    ordersList.appendChild(orderElement);
+                });
+                
+                // Update recent orders in overview
+                const recentOrders = document.getElementById('recentOrders');
+                recentOrders.innerHTML = orders.slice(0, 3).map(order => `
+                    <div class="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                            <div class="font-medium">Order #${order.id}</div>
+                            <div class="text-sm text-gray-500">${new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">$${order.total_amount}</div>
+                            <div class="text-sm ${getStatusColor(order.status)}">${order.status}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showAlert('error', 'Failed to load orders');
+            }
+        }
+
+        async function loadWishlist() {
+            try {
+                const response = await fetch('http://localhost:8000/api/wishlists', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const wishlist = await response.json();
+                
+                const wishlistGrid = document.getElementById('wishlistGrid');
+                wishlistGrid.innerHTML = '';
+                
+                wishlist.forEach(item => {
+                    const product = item.product;
+                    const div = document.createElement('div');
+                    div.className = 'bg-white rounded-lg shadow overflow-hidden';
+                    div.innerHTML = `
+                        <img src="${JSON.parse(product.image_urls)[0]}" alt="${product.title}" 
+                            class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold">${product.title}</h3>
+                            <p class="text-gray-600 mt-1">$${product.price}</p>
+                            <div class="mt-4 flex space-x-2">
+                                <button onclick="addToCart(${product.id})" 
+                                    class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                                    Add to Cart
+                                </button>
+                                <button onclick="removeFromWishlist(${item.id})"
+                                    class="px-4 py-2 text-red-600 hover:bg-red-50 rounded">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    wishlistGrid.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                showAlert('error', 'Failed to load wishlist');
+            }
+        }
+
+        async function loadReviews() {
+            try {
+                const response = await fetch('http://localhost:8000/api/reviews/user/reviews', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const reviews = await response.json();
+                
+                const reviewsList = document.getElementById('reviewsList');
+                reviewsList.innerHTML = '';
+                
+                reviews.forEach(review => {
+                    const div = document.createElement('div');
+                    div.className = 'border rounded-lg p-4';
+                    div.innerHTML = `
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="font-semibold">${review.product.title}</div>
+                                <div class="text-yellow-400 mt-1">
+                                    ${'★'.repeat(review.rating)}
+                                    ${'☆'.repeat(5 - review.rating)}
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                ${new Date(review.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <p class="mt-2 text-gray-600">${review.comment}</p>
+                    `;
+                    reviewsList.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                showAlert('error', 'Failed to load reviews');
+            }
+        }
+
+        function loadCountries() {
+            const countries = [
+                "United States", "United Kingdom", "Canada", "Australia", "Germany", 
+                "France", "Italy", "Spain", "Japan", "China", "India"
+            ].sort();
+            
+            const countrySelect = document.getElementById('country');
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+            
+            // Set current user's country
+            if (currentUser.country) {
+                countrySelect.value = currentUser.country;
+            }
+        }
+
+        async function updateProfile() {
+            try {
+                const formData = {
+                    full_name: document.getElementById('fullName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    country: document.getElementById('country').value
+                };
+                
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                
+                if (currentPassword && newPassword) {
+                    formData.current_password = currentPassword;
+                    formData.new_password = newPassword;
+                }
+                
+                const response = await fetch('http://localhost:8000/api/users/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    showAlert('success', 'Profile updated successfully');
+                } else {
+                    const error = await response.json();
+                    showAlert('error', error.detail || 'Failed to update profile');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showAlert('error', 'Failed to update profile');
+            }
+        }
+
+        async function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/users/profile/image', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    document.getElementById('profileImage').src = updatedUser.profile_image;
+                    showAlert('success', 'Profile image updated successfully');
+                } else {
+                    showAlert('error', 'Failed to update profile image');
+                }
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                showAlert('error', 'Failed to upload image');
+            }
+        }
+
+        async function removeFromWishlist(wishlistId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/wishlists/${wishlistId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    loadWishlist();
+                    showAlert('success', 'Item removed from wishlist');
+                } else {
+                    showAlert('error', 'Failed to remove item from wishlist');
+                }
+            } catch (error) {
+                console.error('Error removing from wishlist:', error);
+                showAlert('error', 'Failed to remove from wishlist');
+            }
+        }
+
+        function switchTab(tabId) {
+            // Update button states
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('bg-indigo-50', btn.dataset.tab === tabId);
+                btn.classList.toggle('text-indigo-600', btn.dataset.tab === tabId);
+            });
+            
+            // Show selected tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== tabId);
+            });
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'text-yellow-600',
+                'paid': 'text-blue-600',
+                'shipped': 'text-purple-600',
+                'delivered': 'text-green-600',
+                'cancelled': 'text-red-600'
+            };
+            return colors[status] || 'text-gray-600';
+        }
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            const alertContent = alert.querySelector('div');
+            
+            alertContent.className = 'rounded-md p-4 ' + 
+                (type === 'error' ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800');
+            alertContent.textContent = message;
+            
+            alert.classList.remove('hidden');
+            setTimeout(() => alert.classList.add('hidden'), 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
 </body>
 </html>
