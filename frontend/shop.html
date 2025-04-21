@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Marketplace - Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-indigo-600">Marketplace</h1>
+      <nav class="space-x-4">
+        <a href="index.html" class="text-gray-700 hover:text-indigo-600">Home</a>
+        <a href="shop.html" class="text-indigo-600 font-semibold">Shop</a>
+        <a href="#" class="text-gray-700 hover:text-indigo-600">Blog</a>
+        <a href="#" class="text-gray-700 hover:text-indigo-600">Help Center</a>
+        <a href="#" class="text-gray-700 hover:text-indigo-600">Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Shop Filters and Products -->
+  <section class="container mx-auto px-4 py-12 flex flex-col md:flex-row gap-6">
+    <!-- Filters -->
+    <aside class="md:w-1/4 bg-white rounded-lg shadow p-6">
+      <h3 class="text-xl font-semibold mb-4">Filters</h3>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Category</label>
+        <select class="w-full border border-gray-300 rounded-md p-2">
+          <option>All</option>
+          <option>Fashion</option>
+          <option>Home Decor</option>
+          <option>Accessories</option>
+          <option>Local Foods</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Country</label>
+        <select class="w-full border border-gray-300 rounded-md p-2">
+          <option>All</option>
+          <option>USA</option>
+          <option>Italy</option>
+          <option>India</option>
+          <option>Canada</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Price Range</label>
+        <input type="range" min="0" max="500" class="w-full" />
+      </div>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Ratings</label>
+        <select class="w-full border border-gray-300 rounded-md p-2">
+          <option>All</option>
+          <option>4 stars & up</option>
+          <option>3 stars & up</option>
+          <option>2 stars & up</option>
+          <option>1 star & up</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Products Grid -->
+    <div class="md:flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div id="products-container" class="md:flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Products will be dynamically loaded here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-100 py-6 mt-auto">
+    <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+      &copy; 2024 Marketplace. All rights reserved.
+    </div>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
