@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from .. import models, schemas
-from ..database import get_db
-from .deps import get_current_active_user, get_current_admin
+import models
+import schemas
+from database import get_db
+from api.deps import get_current_active_user, get_current_admin
 from datetime import datetime
 from sqlalchemy import func
 import os
@@ -166,6 +167,29 @@ async def verify_seller(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Seller not found"
+        )
+    
+    user.is_verified = True
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.post("/verify-buyer/{user_id}", response_model=schemas.User)
+async def verify_buyer(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_admin)
+):
+    """Verify a buyer (admin only)"""
+    user = db.query(models.User).filter(
+        models.User.id == user_id,
+        models.User.user_type == models.UserType.BUYER
+    ).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Buyer not found"
         )
     
     user.is_verified = True
