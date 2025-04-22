@@ -8,8 +8,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 import os
 from dotenv import load_dotenv
-from . import models, schemas
-from .database import SessionLocal, engine, get_db
+import models
+import schemas
+from database import SessionLocal, engine, get_db
 
 # Load environment variables
 load_dotenv()
@@ -163,48 +164,46 @@ async def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 # Import and include routers
-from .api import (
-    products,
-    categories,
-    orders,
-    reviews,
-    users,
-    wishlists
-)
+from api.products import router as products_router
+from api.categories import router as categories_router
+from api.orders import router as orders_router
+from api.reviews import router as reviews_router
+from api.users import router as users_router
+from api.wishlists import router as wishlists_router
 
 # Include routers with prefixes and tags
 app.include_router(
-    products.router,
+    products_router,
     prefix="/api/products",
     tags=["Products"]
 )
 
 app.include_router(
-    categories.router,
+    categories_router,
     prefix="/api/categories",
     tags=["Categories"]
 )
 
 app.include_router(
-    orders.router,
+    orders_router,
     prefix="/api/orders",
     tags=["Orders"]
 )
 
 app.include_router(
-    reviews.router,
+    reviews_router,
     prefix="/api/reviews",
     tags=["Reviews"]
 )
 
 app.include_router(
-    users.router,
+    users_router,
     prefix="/api/users",
     tags=["Users"]
 )
 
 app.include_router(
-    wishlists.router,
+    wishlists_router,
     prefix="/api/wishlists",
     tags=["Wishlists"]
 )
