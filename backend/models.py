@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Float, DateTime, Text, Enum
 from sqlalchemy.orm import relationship
-from .database import Base
-import datetime
+from database import Base
+from datetime import datetime
 import enum
 
 class UserType(str, enum.Enum):
@@ -30,7 +30,7 @@ class User(Base):
     profile_image = Column(String(255))
     country = Column(String(100))
     language = Column(String(10), default="en")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime)
 
     # Relationships
@@ -48,6 +48,7 @@ class Category(Base):
     description = Column(Text)
     image_url = Column(String(255))
     parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     products = relationship("Product", back_populates="category")
     subcategories = relationship("Category")
@@ -66,8 +67,9 @@ class Product(Base):
     image_urls = Column(Text)  # Store as JSON string
     shipping_info = Column(Text)  # Store as JSON string
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    rating = Column(Float, default=0.0)  # Average rating
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
     # Relationships
     owner = relationship("User", back_populates="products")
@@ -88,8 +90,8 @@ class Order(Base):
     tracking_number = Column(String(100))
     payment_status = Column(String(50), default="pending")
     payment_method = Column(String(50))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
     # Relationships
     buyer = relationship("User", foreign_keys=[buyer_id], back_populates="orders_as_buyer")
@@ -119,7 +121,7 @@ class Review(Base):
     seller_id = Column(Integer, ForeignKey("users.id"))
     rating = Column(Integer, nullable=False)
     comment = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     product = relationship("Product", back_populates="reviews")
@@ -132,7 +134,7 @@ class Wishlist(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")
     product = relationship("Product")
