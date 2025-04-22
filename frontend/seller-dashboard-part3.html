@@ -1,0 +1,40 @@
+<!-- Main Content -->
+            <div class="flex-1">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Welcome Back, <span id="welcomeName">Seller</span>!</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <div class="text-indigo-600 text-lg font-semibold mb-2">Total Sales</div>
+                                <div class="text-3xl font-bold" id="totalSales">$0</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <div class="text-green-600 text-lg font-semibold mb-2">Orders</div>
+                                <div class="text-3xl font-bold" id="totalOrders">0</div>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <div class="text-purple-600 text-lg font-semibold mb-2">Products</div>
+                                <div class="text-3xl font-bold" id="totalProducts">0</div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <div class="text-yellow-600 text-lg font-semibold mb-2">Rating</div>
+                                <div class="text-3xl font-bold" id="averageRating">0.0★</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Chart -->
+                    <div class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Sales Overview</h3>
+                        <canvas id="salesChart" height="200"></canvas>
+                    </div>
+
+                    <!-- Recent Orders -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Recent Orders</h3>
+                        <div id="recentOrders" class="space-y-4">
+                            <!-- Populated via JavaScript -->
+                        </div>
+                    </div>
+                </div>
