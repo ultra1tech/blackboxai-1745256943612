@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from .. import models, schemas
-from ..database import get_db
-from .deps import get_current_user, get_current_active_user, verify_marketplace_access
+import models
+import schemas
+from database import get_db
+from api.deps import get_current_user, get_current_active_user, verify_marketplace_access
 from datetime import datetime
 from sqlalchemy import or_
 
