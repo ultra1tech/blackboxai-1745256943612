@@ -74,6 +74,15 @@ class UserCreate(UserBase):
             raise ValueError('Password must be at least 8 characters')
         return v
 
+class UserProfileUpdate(UserBase):
+    password: Optional[str] = None
+
+    @validator('password')
+    def password_strength(cls, v):
+        if v is not None and len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
+        return v
+
 class CategoryCreate(CategoryBase):
     pass
 
@@ -174,3 +183,31 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: Optional[str] = None
     user_type: Optional[UserType] = None
+
+# Additional Schemas
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
+    tracking_number: Optional[str] = None
+
+class SellerStats(BaseModel):
+    total_orders: int
+    pending_orders: int
+    completed_orders: int
+    total_revenue: float
+
+class UserStats(BaseModel):
+    total_orders: int
+    total_spent: Optional[float] = None
+    total_revenue: Optional[float] = None
+    total_products: Optional[int] = None
+    average_rating: Optional[float] = None
+    total_reviews: Optional[int] = None
+
+class SellerProfile(BaseModel):
+    seller: User
+    total_products: int
+    total_sales: int
+    average_rating: float
+
+class WishlistCheck(BaseModel):
+    in_wishlist: bool
